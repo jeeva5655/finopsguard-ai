@@ -29,12 +29,38 @@ import {
   RefreshCw
 } from 'lucide-react';
 import './App.css';
+import AnimatedCounter from './components/AnimatedCounter.jsx';
+import TerraformHighlighter from './components/TerraformHighlighter.jsx';
+import ToastContainer from './components/Toast.jsx';
+import DashboardSkeleton from './components/DashboardSkeleton.jsx';
+import {
+  CostBreakdownPieChart,
+  HistoricalSpendAreaChart,
+  DepartmentSavingsBarChart,
+  EfficiencyRadialGauge
+} from './components/CostCharts.jsx';
+import Footer from './components/Footer.jsx';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview'); // overview | agents | cedar | remediation | copilot | report
   const [estate, setEstate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedEnv, setSelectedEnv] = useState('ALL');
+  
+  // Toast notification state
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (type, title, message) => {
+    const id = Date.now() + Math.random().toString(36).substring(2, 6);
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
   
   // Agent streaming state
   const [agentRunning, setAgentRunning] = useState(false);
@@ -123,8 +149,10 @@ export default function App() {
       setAgentCompleted(false);
       setAgentLogs([]);
       setCurrentStep(0);
+      addToast('info', 'Cloud Estate Reset', 'Restored infrastructure telemetry to unoptimized baseline.');
     } catch (err) {
       console.error('Failed to reset estate:', err);
+      addToast('error', 'Reset Failed', 'Could not reset estate telemetry.');
     }
   };
 
@@ -136,6 +164,7 @@ export default function App() {
     setCurrentStep(1);
     setAgentCompleted(false);
     setFinalReport(null);
+    addToast('info', 'Multi-Agent Loop Initialized', '5-Tier autonomous pipeline scanning AWS estate...');
 
     const eventSource = new EventSource('/api/agents/stream');
 
@@ -153,12 +182,14 @@ export default function App() {
       setAgentCompleted(true);
       setFinalReport(data.report);
       eventSource.close();
+      addToast('success', 'Multi-Agent Scan Complete', 'Generated Cedar policy checks, IaC plans, and Executive briefing.');
     });
 
     eventSource.addEventListener('error', (event) => {
       console.error('SSE Error:', event);
       setAgentRunning(false);
       eventSource.close();
+      addToast('error', 'SSE Connection Error', 'Agent event stream disconnected.');
     });
   };
 
@@ -178,8 +209,14 @@ export default function App() {
       });
       const data = await res.json();
       setSimResult(data);
+      if (data.decision === 'Permit') {
+        addToast('success', 'Cedar Policy: PERMITTED', data.rationale || 'Action complies with all Cedar guardrails.');
+      } else {
+        addToast('forbid', 'Cedar Policy: FORBIDDEN', data.rationale || 'Action strictly blocked by Zero-Trust policy.');
+      }
     } catch (err) {
       console.error('Failed to evaluate Cedar:', err);
+      addToast('error', 'Evaluation Error', 'Failed to communicate with Cedar PDP.');
     }
   };
 
@@ -196,12 +233,15 @@ export default function App() {
       const data = await res.json();
       if (res.ok) {
         setRemediationSuccessMsg(data.message);
+        addToast('success', 'Remediation Applied', data.message);
         fetchEstate();
       } else {
+        addToast('error', 'Cedar Blocked Mutation', data.error || data.rationale || 'Action blocked by Cedar policy');
         alert(data.error || data.rationale || 'Action blocked by Cedar policy');
       }
     } catch (err) {
       console.error('Remediation error:', err);
+      addToast('error', 'Remediation Error', 'Could not apply remediation.');
     } finally {
       setRemediating(false);
     }
@@ -243,14 +283,7 @@ export default function App() {
   };
 
   if (loading || !estate) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-        <RefreshCw className="spin-slow" size={40} color="#FF9900" />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>
-          Initializing FinOpsGuard Multi-Agent Engine...
-        </h2>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const filteredResources = estate.resources.filter((r) => {
@@ -364,7 +397,7 @@ export default function App() {
             <DollarSign size={18} color="#FF9900" />
           </div>
           <div className="kpi-value code-font" style={{ color: '#FFB340' }}>
-            ${estate.account.currentMonthlyRunRate.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <AnimatedCounter value={estate.account.currentMonthlyRunRate} prefix="$" decimals={2} />
           </div>
           <div className="kpi-footer">
             <span>4 Regions</span> • <span>7 Core AWS Services</span>
@@ -377,7 +410,7 @@ export default function App() {
             <TrendingDown size={18} color="#06B6D4" />
           </div>
           <div className="kpi-value code-font" style={{ color: '#38BDF8' }}>
-            ${estate.account.detectedMonthlyWaste.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <AnimatedCounter value={estate.account.detectedMonthlyWaste} prefix="$" decimals={2} />
           </div>
           <div className="kpi-footer">
             <span style={{ color: '#F43F5E', fontWeight: 700 }}>
@@ -392,7 +425,7 @@ export default function App() {
             <Zap size={18} color="#10B981" />
           </div>
           <div className="kpi-value code-font" style={{ color: '#34D399' }}>
-            ${estate.account.potentialAnnualSavings.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <AnimatedCounter value={estate.account.potentialAnnualSavings} prefix="$" decimals={2} />
           </div>
           <div className="kpi-footer">
             <span>ROI: 38.4x return</span> • <span>{estate.account.carbonFootprintMetric}</span>
@@ -406,7 +439,7 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
             <span className="kpi-value code-font" style={{ color: '#C084FC' }}>
-              {estate.account.efficiencyScore}
+              <AnimatedCounter value={estate.account.efficiencyScore} decimals={0} />
             </span>
             <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>/ 100</span>
           </div>
@@ -421,16 +454,26 @@ export default function App() {
       {/* TAB 1: OVERVIEW / COMMAND CENTER */}
       {activeTab === 'overview' && (
         <main>
-          <div className="content-grid-2col">
-            {/* Waste Breakdown by Service */}
+          {/* Top Row: Service Spend Distribution + Zero-Trust Engine */}
+          <div className="content-grid-2col" style={{ marginBottom: '24px' }}>
+            {/* Waste Breakdown by Service & Donut Chart */}
             <div className="glass-panel" style={{ padding: '24px' }}>
               <div className="section-header">
-                <h2 className="section-title">
-                  <Server size={20} color="#FF9900" /> AWS Spend & Detected Waste by Service
-                </h2>
-                <span className="badge badge-aws">AWS Cost Explorer CUR</span>
+                <div>
+                  <h2 className="section-title">
+                    <Server size={20} color="#FF9900" /> AWS Spend & Inefficiency Distribution
+                  </h2>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    Cost Explorer CUR breakdown across provisioned workloads
+                  </p>
+                </div>
+                <span className="badge badge-aws">Cost Explorer CUR</span>
               </div>
-              <div className="service-waste-list">
+
+              {/* Interactive Donut Chart */}
+              <CostBreakdownPieChart data={estate.costBreakdownByService} />
+
+              <div className="service-waste-list" style={{ marginTop: '12px' }}>
                 {estate.costBreakdownByService.map((item, idx) => (
                   <div key={idx} className="service-waste-item">
                     <div className="service-waste-info">
@@ -461,7 +504,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Zero-Trust FinOps Guard Status Card */}
+            {/* Zero-Trust FinOps Guard Status Card & Latency Engine */}
             <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <div className="section-header">
@@ -486,6 +529,10 @@ export default function App() {
                     <CheckCircle2 size={16} color="#10B981" />
                     <span>Orphaned EBS Purge: <strong>Permit with Snapshot</strong></span>
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.84rem' }}>
+                    <CheckCircle2 size={16} color="#10B981" />
+                    <span>S3 Intelligent-Tiering: <strong>Permit with SOC2 Tag</strong></span>
+                  </div>
                 </div>
               </div>
 
@@ -496,6 +543,54 @@ export default function App() {
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                   Tool execution latency reduced by <strong>46.2%</strong> via opportunistic pattern-aware parallelization.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 6-Month Continuous Spend vs Waste Trend Area Chart */}
+          <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+            <div className="section-header">
+              <div>
+                <h2 className="section-title">
+                  <TrendingDown size={20} color="#FF9900" /> Continuous Cloud Telemetry & 6-Month Waste Trajectory
+                </h2>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                  Comparing Gross Cloud Spend, Detected Waste, and Optimized Post-Remediation Baseline
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span className="badge badge-aws">CloudWatch Metrics</span>
+                <span className="badge badge-emerald">Model Confidence: 99.4%</span>
+              </div>
+            </div>
+
+            <HistoricalSpendAreaChart data={estate.monthlyHistoricalTrend} />
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+              marginTop: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid rgba(255,255,255,0.06)'
+            }}>
+              <div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Current Monthly Spend</div>
+                <div className="code-font" style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFB340' }}>
+                  ${estate.account.currentMonthlyRunRate.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Avoidable Waste (37.7%)</div>
+                <div className="code-font" style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FB7185' }}>
+                  ${estate.account.detectedMonthlyWaste.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Target Optimized Baseline</div>
+                <div className="code-font" style={{ fontSize: '1.1rem', fontWeight: 800, color: '#34D399' }}>
+                  ${(estate.account.currentMonthlyRunRate - estate.account.detectedMonthlyWaste).toLocaleString()}
                 </div>
               </div>
             </div>
@@ -1048,7 +1143,7 @@ export default function App() {
                   </span>
                   <span className="badge badge-aws">AWS Provider 5.0+</span>
                 </div>
-                <pre className="diff-view">{selectedResource.terraformRemediation}</pre>
+                <TerraformHighlighter code={selectedResource.terraformRemediation} />
               </div>
 
               <div className="glass-panel" style={{ padding: '20px' }}>
@@ -1214,12 +1309,14 @@ ${estate.resources.map(r => `- ${r.name} (${r.service}): Potential monthly savin
                 a.href = url;
                 a.download = `FinOpsGuard-Executive-Report-${estate.account.id}.md`;
                 a.click();
+                addToast('success', 'Report Exported', `FinOpsGuard-Executive-Report-${estate.account.id}.md downloaded successfully.`);
               }}
             >
               <Download size={16} /> Export Markdown Audit Report
             </button>
           </div>
 
+          {/* Top 3 Metric Highlight Panels */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '28px' }}>
             <div className="glass-panel" style={{ padding: '20px' }}>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>12-Month Net Payback</span>
@@ -1252,6 +1349,40 @@ ${estate.resources.map(r => `- ${r.name} (${r.service}): Potential monthly savin
             </div>
           </div>
 
+          {/* C-Suite Visual Analytics Charts */}
+          <div className="content-grid-2col" style={{ marginBottom: '28px' }}>
+            <div className="glass-panel" style={{ padding: '20px' }}>
+              <div className="section-header" style={{ marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '0.94rem', fontWeight: 700 }}>
+                    Workload Optimization by Engineering Team
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Current vs optimized cloud run-rate across cost centers
+                  </p>
+                </div>
+                <span className="badge badge-aws">Cost Allocation</span>
+              </div>
+              <DepartmentSavingsBarChart data={estate.departmentSavings} />
+            </div>
+
+            <div className="glass-panel" style={{ padding: '20px' }}>
+              <div className="section-header" style={{ marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '0.94rem', fontWeight: 700 }}>
+                    AWS Well-Architected Efficiency Score
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Infrastructure posture rating vs industry peers
+                  </p>
+                </div>
+                <span className="badge badge-emerald">Target: 96/100</span>
+              </div>
+              <EfficiencyRadialGauge data={estate.efficiencyBenchmarks} />
+            </div>
+          </div>
+
+          {/* Architectural Compliance & Strategy */}
           <div className="glass-panel" style={{ padding: '24px' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '16px' }}>
               Architectural Compliance & Next Steps
@@ -1270,6 +1401,12 @@ ${estate.resources.map(r => `- ${r.name} (${r.service}): Potential monthly savin
           </div>
         </div>
       )}
+
+      {/* Global Hackathon & Engine Footer */}
+      <Footer />
+
+      {/* Toast Notification Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

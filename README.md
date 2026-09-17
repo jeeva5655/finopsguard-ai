@@ -165,11 +165,18 @@ sam deploy --guided
 
 ## 🏆 Hackathon Tracks & Impact
 
-- **Ship It (First Prize)**: Built entirely on AWS services (Bedrock, Cedar, Serverless, DynamoDB, S3, Amplify) with full cloud deployment capability.
-- **Best UI Prize**: World-class cyber-dark glassmorphic FinOps design system with real-time SSE streaming visualizer, interactive cost topography, side-by-side Terraform diffs, and AI copilot.
+- **Ship It (First Prize)**: Built entirely on AWS services (Amazon Bedrock Claude 3.5 Sonnet, AWS Cedar PDP/PEP RFC Engine, DynamoDB audit ledger, S3 manifests, and AWS Amplify / SAM CloudFormation templates) with full cloud deployment capability.
+- **Best UI Prize**: World-class cyber-dark glassmorphic FinOps design system featuring:
+  - **Dynamic Recharts Visualizations**: Interactive AWS CUR spend distribution donut chart, 6-month continuous telemetry waste trajectory area chart, department cost allocation bar chart, and AWS Well-Architected efficiency radial gauge.
+  - **Animated Metric Counters**: Smooth exponential count-up easing for live KPI transitions.
+  - **5-Tier Agent Pipeline Visualizer**: Step-by-step real-time SSE streaming console with glowing state transitions and flow connectors.
+  - **Production-Grade Terraform HCL Highlighter**: Line-numbered syntax coloring with zero-downtime compensating transaction Saga rollback plans and 1-click clipboard copy.
+  - **Zero-Trust Cedar Playground**: Interactive policy evaluation gate with immediate visual decision rationale.
+  - **Toast Notifications**: Slide-in real-time alerts for Cedar policy enforcement, remediations, and audit reports.
 - **Demo Script**: See [PITCH_AND_DEMO_SCRIPT.md](PITCH_AND_DEMO_SCRIPT.md) for the 3-minute video presentation guide.
 
 ---
 
 ## 📄 License
-MIT License. Created by [Jeeva N](https://github.com/jeeva5655).
+MIT License. Created by [Jeeva N](https://github.com/jeeva5655) for the WeMakeDevs & AWS Hackathon 2026.
+See [LICENSE](LICENSE) for details.

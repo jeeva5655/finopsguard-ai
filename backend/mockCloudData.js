@@ -33,6 +33,28 @@ export const INITIAL_CLOUD_ESTATE = {
     { day: "Yesterday", spend: 1710, benchmark: 1050 },
     { day: "Today (Projected)", spend: 1630, benchmark: 1050 }
   ],
+  monthlyHistoricalTrend: [
+    { month: "Apr 2026", grossSpend: 42100, detectedWaste: 14200, optimizedBaseline: 27900 },
+    { month: "May 2026", grossSpend: 44800, detectedWaste: 15900, optimizedBaseline: 28900 },
+    { month: "Jun 2026", grossSpend: 46500, detectedWaste: 17100, optimizedBaseline: 29400 },
+    { month: "Jul 2026", grossSpend: 47200, detectedWaste: 17800, optimizedBaseline: 29400 },
+    { month: "Aug 2026", grossSpend: 48100, detectedWaste: 18100, optimizedBaseline: 30000 },
+    { month: "Sep 2026 (Live)", grossSpend: 48920, detectedWaste: 18450, optimizedBaseline: 30470 }
+  ],
+  departmentSavings: [
+    { team: "AI / ML Research", currentSpend: 23594, targetSpend: 4719, savings: 18875, pctReduction: 80.0 },
+    { team: "Data Platform & Lake", currentSpend: 3795, targetSpend: 1518, savings: 2277, pctReduction: 60.0 },
+    { team: "Core Backend API", currentSpend: 3840, targetSpend: 1920, savings: 1920, pctReduction: 50.0 },
+    { team: "Cloud Networking", currentSpend: 2150, targetSpend: 800, savings: 1350, pctReduction: 62.8 },
+    { team: "Integrations / Serverless", currentSpend: 780, targetSpend: 240, savings: 540, pctReduction: 69.2 },
+    { team: "DevOps & QA Staging", currentSpend: 480, targetSpend: 0, savings: 480, pctReduction: 100.0 }
+  ],
+  efficiencyBenchmarks: [
+    { name: "Current State", score: 62, fill: "#F43F5E" },
+    { name: "AWS Peer Median", score: 71, fill: "#F59E0B" },
+    { name: "Well-Architected Std", score: 88, fill: "#06B6D4" },
+    { name: "FinOpsGuard Target", score: 96, fill: "#10B981" }
+  ],
   resources: [
     {
       id: "i-09f4b7a1e2c83d091",
