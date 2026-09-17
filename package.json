@@ -1,0 +1,21 @@
+{
+  "name": "finopsguard-ai",
+  "version": "1.0.0",
+  "description": "FinOpsGuard AI: Autonomous AWS Multi-Agent Cloud Cost Optimization & Zero-Trust Governance Platform",
+  "scripts": {
+    "dev:backend": "cd backend && node server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "node backend/server.js"
+  },
+  "keywords": [
+    "aws",
+    "finops",
+    "multi-agent",
+    "bedrock",
+    "cedar",
+    "cloud-cost-optimizer"
+  ],
+  "author": "Jeeva N (@jeeva5655)",
+  "license": "MIT"
+}

@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: FinOpsGuard AI - Serverless Multi-Agent Cloud Cost Optimization Engine
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs20.x
+    Tracing: Active
+    Environment:
+      Variables:
+        AUDIT_TABLE_NAME: !Ref FinOpsAuditTable
+        IAC_BUCKET_NAME: !Ref FinOpsIaCBucket
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+
+Resources:
+  # DynamoDB Ledger for Multi-Agent Audit Trail & Cedar Invocations
+  FinOpsAuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: finopsguard-audit-ledger
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: traceId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: traceId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+
+  # S3 Bucket for Synthesized IaC Manifests and Executive Reports
+  FinOpsIaCBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'finopsguard-iac-${AWS::AccountId}-${AWS::Region}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  # API Gateway HttpApi
+  FinOpsHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: FinOpsGuardHttpApi
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        AllowOrigins:
+          - '*'
+
+  # Core Multi-Agent Lambda Function
+  FinOpsOrchestratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/
+      Handler: server.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FinOpsAuditTable
+        - S3CrudPolicy:
+            BucketName: !Ref FinOpsIaCBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - ce:GetCostAndUsage
+                - cloudwatch:GetMetricData
+                - ec2:DescribeInstances
+                - ec2:DescribeVolumes
+                - rds:DescribeDBInstances
+                - s3:ListAllMyBuckets
+              Resource: '*'
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref FinOpsHttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  HttpApiUrl:
+    Description: Live API Gateway Endpoint URL for FinOpsGuard AI
+    Value: !Sub 'https://${FinOpsHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+  DynamoDBTableName:
+    Description: DynamoDB Audit Ledger
+    Value: !Ref FinOpsAuditTable
+  S3BucketName:
+    Description: S3 IaC Storage Bucket
+    Value: !Ref FinOpsIaCBucket
