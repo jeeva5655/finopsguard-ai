@@ -26,7 +26,8 @@ import {
   ExternalLink,
   Download,
   Send,
-  RefreshCw
+  RefreshCw,
+  Brain
 } from 'lucide-react';
 import './App.css';
 import AnimatedCounter from './components/AnimatedCounter.jsx';
@@ -40,9 +41,10 @@ import {
   EfficiencyRadialGauge
 } from './components/CostCharts.jsx';
 import Footer from './components/Footer.jsx';
+import GenAIOptimizer from './components/GenAIOptimizer.jsx';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('overview'); // overview | agents | cedar | remediation | copilot | report
+  const [activeTab, setActiveTab] = useState('overview'); // overview | agents | cedar | remediation | copilot | report | genai
   const [estate, setEstate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedEnv, setSelectedEnv] = useState('ALL');
@@ -360,6 +362,13 @@ export default function App() {
             onClick={() => setActiveTab('report')}
           >
             <FileText size={16} /> Executive Briefing
+          </button>
+          <button
+            id="tab-genai"
+            className={`nav-tab ${activeTab === 'genai' ? 'active' : ''}`}
+            onClick={() => setActiveTab('genai')}
+          >
+            <Brain size={16} /> GenAI Optimizer
           </button>
         </nav>
 
@@ -1400,6 +1409,11 @@ ${estate.resources.map(r => `- ${r.name} (${r.service}): Potential monthly savin
             </ul>
           </div>
         </div>
+      )}
+
+      {/* TAB 7: GENAI OPTIMIZER */}
+      {activeTab === 'genai' && (
+        <GenAIOptimizer addToast={addToast} />
       )}
 
       {/* Global Hackathon & Engine Footer */}

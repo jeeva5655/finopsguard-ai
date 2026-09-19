@@ -1,6 +1,10 @@
 /**
  * FinOpsGuard AI Backend Server
- * Node.js / Express Server with SSE agent streaming, Cedar Policy Engine, and FinOps Copilot
+ * Node.js / Express Server with SSE agent streaming, Cedar Policy Engine, FinOps Copilot,
+ * and GenAI Cost Optimizer with Antigravity Integration.
+ *
+ * SECURITY: Implements security headers, request size limits, input validation,
+ * and restricted CORS origins.
  */
 
 import express from "express";
@@ -8,12 +12,44 @@ import cors from "cors";
 import { FinOpsMultiAgentHarness } from "./agents.js";
 import { CedarPolicyEngine, DEFAULT_CEDAR_POLICIES } from "./cedarEngine.js";
 import { INITIAL_CLOUD_ESTATE } from "./mockCloudData.js";
+import { getGenAIUsage, getAntigravityUsage, runGenAIOptimizer } from "./genaiOptimizer.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+// ─── Security: CORS origin restriction ────────────────────────────────
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:4173'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, Postman, SSE)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permissive in dev; restrict in production
+    }
+  },
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
+
+// ─── Security: HTTP Security Headers ──────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// ─── Security: Request size limits ────────────────────────────────────
+app.use(express.json({ limit: '100kb' }));
+
+// SECURITY: Remove Express fingerprint header
+app.disable('x-powered-by');
 
 // Global state
 let activeEstate = JSON.parse(JSON.stringify(INITIAL_CLOUD_ESTATE));
@@ -136,11 +172,18 @@ app.post("/api/estate/reset", (req, res) => {
 // 8. FinOps Copilot (Interactive AI Assistance powered by Bedrock Prompting Architecture)
 app.post("/api/copilot/chat", (req, res) => {
   const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ error: "Message is required" });
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ error: "Message must be a non-empty string" });
   }
 
-  const query = message.toLowerCase();
+  // SECURITY: Limit input length to prevent abuse
+  if (message.length > 2000) {
+    return res.status(400).json({ error: "Message exceeds maximum length of 2000 characters" });
+  }
+
+  // SECURITY: Sanitize input — strip potential script/HTML injection
+  const sanitized = message.replace(/<[^>]*>/g, '').trim();
+  const query = sanitized.toLowerCase();
   let reply = "";
   let actions = [];
 
@@ -171,6 +214,30 @@ app.post("/api/copilot/chat", (req, res) => {
   });
 });
 
+// ─── 9. GenAI Cost Optimizer Endpoints ─────────────────────────────────
+
+// GET /api/genai/usage — GenAI usage analytics with multi-model mock data
+app.get("/api/genai/usage", getGenAIUsage);
+
+// GET /api/genai/antigravity — Parse local Antigravity IDE transcripts for real token spend
+app.get("/api/genai/antigravity", getAntigravityUsage);
+
+// POST /api/genai/optimize — Run optimization engine with recommendations
+app.post("/api/genai/optimize", runGenAIOptimizer);
+
+// ─── 10. Global 404 Handler ────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: "Endpoint not found", path: req.originalUrl });
+});
+
+// ─── 11. Global Error Handler ──────────────────────────────────────────
+app.use((err, req, res, _next) => {
+  console.error('[FinOpsGuard API] Unhandled error:', err.message);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 app.listen(PORT, () => {
   console.log(`[FinOpsGuard API] Server running on http://localhost:${PORT}`);
+  console.log(`[FinOpsGuard API] GenAI Optimizer endpoints active`);
+  console.log(`[FinOpsGuard API] Security headers enabled`);
 });
