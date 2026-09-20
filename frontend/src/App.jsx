@@ -396,16 +396,24 @@ export default function App() {
         rationale = `Cedar Policy '${policyName}' FORBIDS downsizing Production database '${simResource.name}' during business hours (09:00 - 18:00 UTC).`;
       }
 
+      const isAllowed = decision === 'Permit';
       const simData = {
         decision,
+        allowed: isAllowed,
         policyId,
         policyName,
         rationale,
         evaluatedAt: new Date().toISOString(),
+        evaluationTrace: [
+          { policyId, effect: isAllowed ? 'permit' : 'forbid' },
+          { policyId: 'policy-01-prod-forbid-terminate', effect: 'forbid' },
+          { policyId: 'policy-02-prod-rds-escalation', effect: 'forbid' },
+          { policyId: 'policy-03-dev-staging-auto-rightsize', effect: 'permit' }
+        ],
         context: { hourOfDay: 14, backupCreated: true }
       };
       setSimResult(simData);
-      if (decision === 'Permit') {
+      if (isAllowed) {
         addToast('success', 'Cedar Policy: PERMITTED', rationale);
       } else {
         addToast('forbid', 'Cedar Policy: FORBIDDEN', rationale);
@@ -1317,7 +1325,7 @@ export default function App() {
                         {simResult.rationale}
                       </div>
                       <div className="code-font" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                        Evaluated against {simResult.evaluationTrace.length} Cedar policies with sub-millisecond in-process latency.
+                        Evaluated against {simResult.evaluationTrace?.length || 4} Cedar policies with sub-millisecond in-process latency.
                       </div>
                     </div>
                   )}
