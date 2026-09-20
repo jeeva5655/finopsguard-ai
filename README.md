@@ -25,6 +25,10 @@ While static FinOps tools generate passive alerts that get ignored, autonomous A
 
 ## 🏛️ System Architecture
 
+<div align="center">
+  <img src="finopsguard_poster.jpg" alt="FinOpsGuard AI Architecture Infographic Poster" width="750" style="border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);" />
+</div>
+
 ```mermaid
 flowchart TB
     subgraph Frontend["FinOps Command Center (React + Modern Vanilla CSS)"]

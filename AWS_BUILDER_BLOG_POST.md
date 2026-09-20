@@ -25,6 +25,10 @@ Traditional FinOps tools only generate passive alert dashboards that engineers i
 
 ## 🏛️ System Architecture on AWS
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/jeeva5655/finopsguard-ai/main/finopsguard_poster.jpg" alt="FinOpsGuard AI System Architecture Poster" width="750" style="border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);" />
+</div>
+
 ```mermaid
 flowchart TB
     subgraph Users["End Users & Cloud Engineers"]
