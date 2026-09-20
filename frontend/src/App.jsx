@@ -115,7 +115,20 @@ export default function App() {
     }
   }, [chatMessages]);
 
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const fetchEstate = async () => {
+    if (!isLocal) {
+      setEstate(INITIAL_CLOUD_ESTATE);
+      if (INITIAL_CLOUD_ESTATE.resources && INITIAL_CLOUD_ESTATE.resources.length > 0) {
+        setSelectedResource(INITIAL_CLOUD_ESTATE.resources[0]);
+        setSimResource(INITIAL_CLOUD_ESTATE.resources[0]);
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await fetch('/api/estate');
@@ -127,7 +140,6 @@ export default function App() {
         setSimResource(data.resources[0]);
       }
     } catch (err) {
-      console.warn('Backend API unavailable, using client-side fallback estate data:', err);
       setEstate(INITIAL_CLOUD_ESTATE);
       if (INITIAL_CLOUD_ESTATE.resources && INITIAL_CLOUD_ESTATE.resources.length > 0) {
         setSelectedResource(INITIAL_CLOUD_ESTATE.resources[0]);
@@ -139,18 +151,33 @@ export default function App() {
   };
 
   const fetchCedarPolicies = async () => {
+    if (!isLocal) {
+      setCedarPolicies(DEFAULT_CEDAR_POLICIES);
+      return;
+    }
+
     try {
       const res = await fetch('/api/cedar/policies');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setCedarPolicies(data);
     } catch (err) {
-      console.warn('Backend API unavailable, using client-side fallback Cedar policies:', err);
       setCedarPolicies(DEFAULT_CEDAR_POLICIES);
     }
   };
 
   const handleResetEstate = async () => {
+    if (!isLocal) {
+      setEstate(JSON.parse(JSON.stringify(INITIAL_CLOUD_ESTATE)));
+      setSelectedResource(INITIAL_CLOUD_ESTATE.resources[0]);
+      setRemediationSuccessMsg(null);
+      setAgentCompleted(false);
+      setAgentLogs([]);
+      setCurrentStep(0);
+      addToast('info', 'Cloud Estate Reset', 'Restored infrastructure telemetry to unoptimized baseline.');
+      return;
+    }
+
     try {
       const res = await fetch('/api/estate/reset', { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -158,7 +185,6 @@ export default function App() {
       setEstate(data.estate);
       setSelectedResource(data.estate.resources[0]);
     } catch (err) {
-      console.warn('Reset endpoint unavailable, resetting state locally:', err);
       setEstate(JSON.parse(JSON.stringify(INITIAL_CLOUD_ESTATE)));
       setSelectedResource(INITIAL_CLOUD_ESTATE.resources[0]);
     }
@@ -311,6 +337,11 @@ export default function App() {
       }, 700);
     };
 
+    if (!isLocal) {
+      runSimulatedAgents();
+      return;
+    }
+
     try {
       const eventSource = new EventSource('/api/agents/stream');
 
@@ -332,12 +363,10 @@ export default function App() {
       });
 
       eventSource.addEventListener('error', (event) => {
-        console.warn('SSE EventSource unavailable, switching to simulated client-side agent runner.');
         eventSource.close();
         runSimulatedAgents();
       });
     } catch (err) {
-      console.warn('EventSource unsupported or failed, running client simulation:', err);
       runSimulatedAgents();
     }
   };
@@ -381,6 +410,11 @@ export default function App() {
       }
     };
 
+    if (!isLocal) {
+      evaluateLocally();
+      return;
+    }
+
     try {
       const res = await fetch('/api/cedar/evaluate', {
         method: 'POST',
@@ -401,16 +435,36 @@ export default function App() {
         addToast('forbid', 'Cedar Policy: FORBIDDEN', data.rationale || 'Action strictly blocked by Zero-Trust policy.');
       }
     } catch (err) {
-      console.warn('Cedar PDP API unavailable, evaluating policy locally:', err);
       evaluateLocally();
     }
   };
 
   // Apply safe remediation
   const handleApplyRemediation = async (resourceId) => {
+    const applyLocally = () => {
+      setEstate((prev) => {
+        if (!prev) return prev;
+        const updated = JSON.parse(JSON.stringify(prev));
+        updated.resources = updated.resources.map((r) =>
+          r.id === resourceId ? { ...r, status: 'remediated', monthlySavings: 0 } : r
+        );
+        return updated;
+      });
+      const successMsg = `Successfully remediated resource ${resourceId}. Projected waste savings locked in!`;
+      setRemediationSuccessMsg(successMsg);
+      addToast('success', 'Remediation Applied', successMsg);
+      setRemediating(false);
+    };
+
+    setRemediating(true);
+    setRemediationSuccessMsg(null);
+
+    if (!isLocal) {
+      setTimeout(applyLocally, 400);
+      return;
+    }
+
     try {
-      setRemediating(true);
-      setRemediationSuccessMsg(null);
       const res = await fetch('/api/remediate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -425,18 +479,7 @@ export default function App() {
       addToast('success', 'Remediation Applied', data.message);
       fetchEstate();
     } catch (err) {
-      console.warn('Remediation API unavailable, applying remediation locally:', err);
-      setEstate((prev) => {
-        if (!prev) return prev;
-        const updated = JSON.parse(JSON.stringify(prev));
-        updated.resources = updated.resources.map((r) =>
-          r.id === resourceId ? { ...r, status: 'remediated', monthlySavings: 0 } : r
-        );
-        return updated;
-      });
-      const successMsg = `Successfully remediated resource ${resourceId}. Projected waste savings locked in!`;
-      setRemediationSuccessMsg(successMsg);
-      addToast('success', 'Remediation Applied', successMsg);
+      applyLocally();
     } finally {
       setRemediating(false);
     }
@@ -474,8 +517,13 @@ export default function App() {
           { sender: 'ai', text: reply, suggestedActions }
         ]);
         setChatLoading(false);
-      }, 600);
+      }, 500);
     };
+
+    if (!isLocal) {
+      generateLocalResponse(query);
+      return;
+    }
 
     try {
       const res = await fetch('/api/copilot/chat', {
@@ -495,7 +543,6 @@ export default function App() {
       ]);
       setChatLoading(false);
     } catch (err) {
-      console.warn('Copilot API unavailable, generating smart local response:', err);
       generateLocalResponse(query);
     }
   };

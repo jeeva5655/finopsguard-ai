@@ -69,11 +69,22 @@ export default function GenAIOptimizer({ addToast }) {
   const [scanning, setScanning] = useState(false);
   const [expandedOpt, setExpandedOpt] = useState(null);
 
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   useEffect(() => {
     fetchAll();
   }, []);
 
   const fetchAll = async () => {
+    if (!isLocal) {
+      setUsageData(MOCK_GENAI_USAGE);
+      setAntigravityData(MOCK_ANTIGRAVITY_DATA);
+      setOptimizations(MOCK_GENAI_USAGE.optimizations);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const [usageRes, agiRes] = await Promise.all([
@@ -87,7 +98,6 @@ export default function GenAIOptimizer({ addToast }) {
       setAntigravityData(agi);
       if (usage.optimizations) setOptimizations(usage.optimizations);
     } catch (err) {
-      console.warn('GenAI fetch API unavailable, using fallback client data:', err);
       setUsageData(MOCK_GENAI_USAGE);
       setAntigravityData(MOCK_ANTIGRAVITY_DATA);
       setOptimizations(MOCK_GENAI_USAGE.optimizations);
@@ -98,6 +108,15 @@ export default function GenAIOptimizer({ addToast }) {
 
   const runOptimizer = async () => {
     setScanning(true);
+    if (!isLocal) {
+      setTimeout(() => {
+        setOptimizations(MOCK_GENAI_USAGE.optimizations);
+        addToast?.('success', 'GenAI Optimizer Complete', `Projected savings: $68.20/month across LLM token cascading.`);
+        setScanning(false);
+      }, 700);
+      return;
+    }
+
     try {
       const res = await fetch('/api/genai/optimize', { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -105,7 +124,6 @@ export default function GenAIOptimizer({ addToast }) {
       setOptimizations(data);
       addToast?.('success', 'GenAI Optimizer Complete', `Projected savings: $${data.totalProjectedSavings?.toFixed(2)}/month`);
     } catch (err) {
-      console.warn('GenAI optimize API unavailable, running client simulation:', err);
       setTimeout(() => {
         setOptimizations(MOCK_GENAI_USAGE.optimizations);
         addToast?.('success', 'GenAI Optimizer Complete', `Projected savings: $68.20/month across LLM token cascading.`);
