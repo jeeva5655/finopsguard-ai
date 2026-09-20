@@ -55,7 +55,8 @@ export default function AnimatedCounter({
     };
   }, [value, duration]);
 
-  const formattedNumber = displayValue.toLocaleString(undefined, {
+  const numValue = typeof displayValue === 'number' && !isNaN(displayValue) ? displayValue : 0;
+  const formattedNumber = numValue.toLocaleString(undefined, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   });

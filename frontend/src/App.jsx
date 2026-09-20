@@ -316,21 +316,23 @@ export default function App() {
           clearInterval(interval);
           setAgentRunning(false);
           setAgentCompleted(true);
+          const approvedSavings = currentResList
+            .filter((r) => !(r.tags?.Environment === 'Production' && r.service === 'Amazon RDS'))
+            .reduce((sum, r) => sum + (r.monthlySavings || 0), 0);
+
           setFinalReport({
-            executiveSummary: {
-              headline: 'FinOpsGuard Autonomous Multi-Agent Audit Completed',
-              totalMonthlySavings: totalSavings,
-              potentialAnnualSavings: totalSavings * 12,
-              newEfficiencyScore: 94,
-              carbonSavings: '3.2 Tons CO2e/month',
-              roiDays: 4
-            },
-            recommendations: currentResList.map((r) => ({
-              resourceId: r.id,
-              action: r.proposedAction,
-              monthlySavings: r.monthlySavings,
-              cedarDecision: r.tags?.Environment === 'Production' && r.service === 'Amazon RDS' ? 'FORBIDDEN (Escalation Required)' : 'PERMITTED'
-            }))
+            traceId: 'trace-sim-1',
+            executionDurationMs: 3420,
+            totalDetectedWaste: totalSavings,
+            immediatelyPermittedSavings: approvedSavings,
+            projectedAnnualImpact: approvedSavings * 12,
+            greenCloudCarbonReduction: '3.2 Metric Tons CO2e/year',
+            roiMultiple: '38.4x return on compute investment',
+            policySummary: {
+              totalEvaluated: currentResList.length,
+              permitted: currentResList.length - 1,
+              forbiddenGuarded: 1
+            }
           });
           addToast('success', 'Multi-Agent Scan Complete', 'Generated Cedar policy checks, IaC plans, and Executive briefing.');
         }
@@ -1137,32 +1139,32 @@ export default function App() {
                   <CheckCircle2 size={20} /> Multi-Agent Optimization Loop Completed
                 </h3>
                 <span className="badge badge-emerald">
-                  Execution Duration: {finalReport.executionDurationMs}ms
+                  Execution Duration: {finalReport?.executionDurationMs || 3420}ms
                 </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
                 <div>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Detected Fleet Waste</span>
                   <div className="code-font" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#FB7185' }}>
-                    ${finalReport.totalDetectedWaste.toLocaleString()}/mo
+                    ${(finalReport?.totalDetectedWaste || 0).toLocaleString()}/mo
                   </div>
                 </div>
                 <div>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Immediately Actionable</span>
                   <div className="code-font" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#34D399' }}>
-                    ${finalReport.immediatelyPermittedSavings.toLocaleString()}/mo
+                    ${(finalReport?.immediatelyPermittedSavings || 0).toLocaleString()}/mo
                   </div>
                 </div>
                 <div>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Zero-Trust Cedar Enforcement</span>
                   <div className="code-font" style={{ fontSize: '1.1rem', fontWeight: 700, color: '#38BDF8' }}>
-                    {finalReport.policySummary.permitted} Permitted / {finalReport.policySummary.forbiddenGuarded} Guarded
+                    {finalReport?.policySummary?.permitted ?? 5} Permitted / {finalReport?.policySummary?.forbiddenGuarded ?? 1} Guarded
                   </div>
                 </div>
                 <div>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Green Cloud Impact</span>
                   <div className="code-font" style={{ fontSize: '1.1rem', fontWeight: 700, color: '#A855F7' }}>
-                    {finalReport.greenCloudCarbonReduction}
+                    {finalReport?.greenCloudCarbonReduction || '3.2 Metric Tons CO2e/year'}
                   </div>
                 </div>
               </div>
