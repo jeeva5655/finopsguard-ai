@@ -3,10 +3,12 @@
 
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Amazon%20Bedrock-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/bedrock/)
 [![AWS Cedar](https://img.shields.io/badge/Policy%20Engine-AWS%20Cedar-06B6D4?logo=security&logoColor=white)](https://www.cedarpolicy.com/)
+[![AWS Amplify](https://img.shields.io/badge/Hosted%20On-AWS%20Amplify-FF9900?logo=awsamplify&logoColor=white)](https://main.da1cyspoy7dm3.amplifyapp.com)
 [![React 19](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Serverless](https://img.shields.io/badge/Architecture-AWS%20Serverless-FD5750?logo=serverless&logoColor=white)](https://aws.amazon.com/serverless/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> 🚀 **LIVE AWS DEMO**: [https://main.da1cyspoy7dm3.amplifyapp.com](https://main.da1cyspoy7dm3.amplifyapp.com)  
 > **Built for the WeMakeDevs & AWS "First Commit" Hackathon (Bharat Builds Tour)**  
 > **Target Tracks**: **Ship It (First Prize)** & **Best UI Prize**  
 > **Author**: Jeeva N ([@jeeva5655](https://github.com/jeeva5655))
