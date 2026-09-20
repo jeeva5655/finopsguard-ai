@@ -32,24 +32,33 @@
 
 ---
 
-### Part 3: Live Cedar Zero-Trust & Remediation Demo (1:30 - 2:25)
+### Part 3: Live Cedar Zero-Trust & Remediation Demo (1:20 - 2:00)
 * **Visual 1**: Switch to **Cedar Policy Guard** tab. Select `aurora-pg-prod-core` (Production) and action `Action::Terminate`. Click **"Evaluate Cedar Policy Gate"**. Show the red `FORBID` badge with mathematical explanation.
 * **Narration**:
   > *"Here is our core innovation: Zero-Trust Safety. If an agent tries to execute a destructive termination on our Production Aurora cluster, AWS Cedar immediately forbids it in sub-milliseconds because Policy 01 strictly locks production workloads."*
 * **Visual 2**: Switch to **IaC Remediation** tab. Select `ml-training-cluster-gpu-p4d` (Development GPU cluster wasting $18,875/mo). Click **"Execute Safe Remediation"**.
 * **Narration**:
-  > *"Conversely, on Development resources, Cedar permits automated right-sizing. With one click, FinOpsGuard applies the Terraform scale-to-zero Spot policy, instantly slashing $18,875/month from our AWS bill and boosting our cloud efficiency score!"*
+  > *"Conversely, on Development resources, Cedar permits automated right-sizing. With one click, FinOpsGuard applies the Terraform scale-to-zero Spot policy, instantly slashing $18,875/month from our AWS bill!"*
 
 ---
 
-### Part 4: Bedrock Copilot & Executive Impact (2:25 - 3:00)
-* **Visual**: Click **Bedrock Copilot** tab and click the prompt pill: *"Why did our GPU training cluster spend $23,594?"* Then show the **Executive Briefing** tab with the 12-month net savings ($221,400) and export button.
+### Part 4: GenAI & LLM Cost Optimizer with Antigravity (2:00 - 2:35)
+* **Visual**: Click on the **GenAI Optimizer** tab. Show the Model Cost Breakdown stacked bars, the Context Caching & Compression recommendations, and the live Antigravity sessions table.
 * **Narration**:
-  > *"FinOpsGuard includes a native Amazon Bedrock Copilot, allowing engineering leads to query cloud spend anomalies in natural language.*
+  > *"Cloud waste isn't just compute and storage anymore—GenAI tokens are the fastest-growing enterprise expense. FinOpsGuard features a dedicated GenAI Optimizer with native Google Antigravity integration.*
   >
-  > *In just 60 seconds, FinOpsGuard transformed an unoptimized $48,000 monthly cloud bill into an automated $221,400 annual EBITDA saving and reduced 4.8 tons of carbon footprint—all with mathematical zero-trust guarantees.*
+  > *It ingests developer session transcripts in real time, breaks down token spend across Claude, Gemini, and Bedrock models, identifies prompt caching opportunities to slash 90% off input tokens, and detects redundant agent tool calls to compress prompt payloads by up to 40%."*
+
+---
+
+### Part 5: Bedrock Copilot & Executive Impact (2:35 - 3:00)
+* **Visual**: Briefly show **Bedrock Copilot** querying spend anomalies, then switch to the **Executive Briefing** tab with the 12-month net savings ($221,400), EBITDA improvements, and ESG carbon stats.
+* **Narration**:
+  > *"FinOpsGuard includes an Amazon Bedrock Copilot for natural language FinOps queries and generates C-Suite Executive Briefings.*
   >
-  > *Built on AWS Bedrock, Cedar, Serverless Lambda, DynamoDB, and Amplify. Thank you!"*
+  > *In under 3 minutes, FinOpsGuard delivers $221,400 in annual recurring savings, cuts 4.8 tons of carbon footprint, and optimizes GenAI token workloads—with mathematical zero-trust guarantees.*
+  >
+  > *Built on AWS Bedrock, AWS Cedar, Serverless, and React 19. Thank you!"*
 
 ---
 

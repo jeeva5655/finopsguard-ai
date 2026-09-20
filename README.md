@@ -33,6 +33,7 @@ flowchart TB
         UI_Cedar["🛡️ AWS Cedar Zero-Trust Playground"]
         UI_IaC["⚡ Terraform Remediation Console"]
         UI_Copilot["💬 Bedrock AI FinOps Copilot"]
+        UI_GenAI["🧠 GenAI & LLM Cost Optimizer (Antigravity & Bedrock)"]
         UI_Report["📑 C-Suite Executive Briefing"]
     end
 
@@ -42,14 +43,16 @@ flowchart TB
         Agent3["3. Zero-Trust Policy Gate (AWS Cedar PEP)"]
         Agent4["4. IaC & Terraform Synthesizer"]
         Agent5["5. FinOps Executive & ESG Carbon Reporter"]
+        Agent6["6. GenAI Token Economics & Antigravity Parser"]
     end
 
     subgraph AWSServices["AWS Cloud Services & Ecosystem"]
-        Bedrock["Amazon Bedrock (Claude 3.5 Sonnet)"]
+        Bedrock["Amazon Bedrock (Claude 3.5 Sonnet & Titan)"]
         Cedar["AWS Cedar Policy Engine (RFC Spec)"]
         DynamoDB["Amazon DynamoDB (Audit Trail)"]
         S3["Amazon S3 (IaC Artifacts & Reports)"]
         Amplify["AWS Amplify Hosting / App Runner"]
+        LocalAI["Antigravity CLI Transcripts & IDE Session Telemetry"]
     end
 
     Frontend <-->|HTTP/2 & SSE Stream| BackendEngine
@@ -57,6 +60,7 @@ flowchart TB
     BackendEngine --> Cedar
     BackendEngine --> DynamoDB
     BackendEngine --> S3
+    BackendEngine <--> LocalAI
 ```
 
 ---
@@ -76,6 +80,23 @@ flowchart TB
    - Synthesizes compensating Saga rollback plans to guarantee seamless reversion in case of canary failure.
 5. **Agent 5: Executive FinOps Reporter**:
    - Computes 12-month net payback ($221,400/yr), EBITDA improvements, and Green Cloud carbon reduction metrics (4.8 Metric Tons CO2e).
+6. **Agent 6: GenAI Token Economics & Antigravity Parser**:
+   - Ingests local developer transcripts and cloud LLM usage across Amazon Bedrock, Claude, and Gemini.
+   - Computes prompt vs. completion token spend, discovers prefix caching candidates, recommends model routing downshifts, and batches redundant tool calls.
+
+---
+
+## 🧠 GenAI & LLM Cost Optimizer (Antigravity Integration)
+
+With enterprise spend rapidly shifting towards Generative AI and agentic coding platforms, FinOpsGuard AI integrates directly with **Google Antigravity CLI** and **Amazon Bedrock**:
+
+- **Live Session Telemetry**: Parses local `transcript.jsonl` files directly from developer machines, extracting step-level input tokens, tool calls, model inferences, and run durations.
+- **Multi-Model Token Costing**: Real-time cost computation across Claude 3.5 Sonnet, Claude 3 Opus, Claude 3.5 Haiku, Gemini 2.5 Pro/Flash, and Amazon Bedrock Titan/Claude.
+- **Actionable Optimization Engine**:
+  - **Context Prefix Caching**: Identifies repeated system prompt prefixes and large workspace context to leverage Bedrock/Anthropic 90% cache read discounts.
+  - **Intelligent Model Routing**: Flags simple classification and formatting tasks running on expensive frontier models and calculates savings from routing to lightweight models.
+  - **Tool Call Batching**: Detects sequential one-by-one tool calls in agent loops and groups them into parallel batches to slash roundtrip token overhead by up to 35%.
+  - **Prompt Compression**: Analyzes large JSON/code payloads in transcripts and applies AST-level pruning to trim 25-40% unnecessary whitespace and tokens.
 
 ---
 
@@ -165,14 +186,17 @@ sam deploy --guided
 
 ## 🏆 Hackathon Tracks & Impact
 
-- **Ship It (First Prize)**: Built entirely on AWS services (Amazon Bedrock Claude 3.5 Sonnet, AWS Cedar PDP/PEP RFC Engine, DynamoDB audit ledger, S3 manifests, and AWS Amplify / SAM CloudFormation templates) with full cloud deployment capability.
+- **Ship It (First Prize)**: Built on AWS services (Amazon Bedrock Claude 3.5 Sonnet, AWS Cedar PDP/PEP RFC Engine, DynamoDB audit ledger, S3 manifests, and AWS Amplify / SAM CloudFormation templates) with full cloud deployment capability and autonomous self-healing execution loops.
 - **Best UI Prize**: World-class cyber-dark glassmorphic FinOps design system featuring:
-  - **Dynamic Recharts Visualizations**: Interactive AWS CUR spend distribution donut chart, 6-month continuous telemetry waste trajectory area chart, department cost allocation bar chart, and AWS Well-Architected efficiency radial gauge.
+  - **7 Full-Fledged Operational Consoles**: Command Center, Multi-Agent Loop, Cedar Policy Guard, IaC Sandbox, Bedrock Copilot, GenAI Optimizer, and Executive Briefing.
+  - **Dynamic Recharts Visualizations**: Interactive AWS CUR spend distribution donut chart, 6-month continuous telemetry waste trajectory area chart, department cost allocation bar chart, model token distribution stacked bar charts, and AWS Well-Architected efficiency radial gauge.
+  - **GenAI Token Economics & Antigravity Telemetry**: Native parsing of local developer agent transcripts, multi-model token costing (Bedrock, Claude, Gemini), context cache recommendations, and prompt compression analysis.
   - **Animated Metric Counters**: Smooth exponential count-up easing for live KPI transitions.
   - **5-Tier Agent Pipeline Visualizer**: Step-by-step real-time SSE streaming console with glowing state transitions and flow connectors.
   - **Production-Grade Terraform HCL Highlighter**: Line-numbered syntax coloring with zero-downtime compensating transaction Saga rollback plans and 1-click clipboard copy.
   - **Zero-Trust Cedar Playground**: Interactive policy evaluation gate with immediate visual decision rationale.
-  - **Toast Notifications**: Slide-in real-time alerts for Cedar policy enforcement, remediations, and audit reports.
+  - **Toast Notifications & Glassmorphic Alerts**: Slide-in real-time alerts for Cedar policy enforcement, remediations, and audit reports.
+- **Enterprise Security Hardening**: Strict zero-trust defense with hardened HTTP security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`), input validation with HTML tag sanitization, payload size throttling, path traversal guards on local telemetry, and fallback error handling.
 - **Demo Script**: See [PITCH_AND_DEMO_SCRIPT.md](PITCH_AND_DEMO_SCRIPT.md) for the 3-minute video presentation guide.
 
 ---
